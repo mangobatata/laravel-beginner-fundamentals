@@ -1,17 +1,27 @@
 version: "3.9"
+
 services:
   mysql:
-    image: mariadb:10.8.3
-    # Uncomment below when on Mac M1
-    # platform: linux/arm64/v8
-    command: --default-authentication-plugin=mysql_native_password
+    image: mariadb:10.6.25-jammy
+    container_name: mysql
     restart: always
+    command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: laravel
     ports:
-      - 3306:3306
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
   adminer:
     image: adminer
+    container_name: adminer
     restart: always
     ports:
-      - 8080:8080
+      - "8080:8080"
+    depends_on:
+      - mysql
+
+volumes:
+  mysql_data:
