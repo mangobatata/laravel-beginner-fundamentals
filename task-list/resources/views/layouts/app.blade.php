@@ -8,10 +8,10 @@
 </head>
 
 <body>
-<h1>{{  }}</h1>
-<div>
-    
-</div>
+    <h1>@yield("title")</h1>
+    <div>
+        @yield("content")
+    </div>
 </body>
 
 </html>

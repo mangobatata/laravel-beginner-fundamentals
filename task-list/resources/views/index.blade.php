@@ -1,82 +1,149 @@
-{{-- Permite saber si la variable está definida --}}
-{{--@isset($name)
-<div>The name is: {{ $name }}</div>
+@extends('layouts.app')
 
+@section('title', 'Lista de Tareas')
 
-<div>The age is: {{ $age }}</div>
-@endisset--}}
+@section('content')
 
-<style>
-    .tasks-container {
-        max-width: 600px;
-        margin: 40px auto;
-        font-family: Arial, sans-serif;
-    }
+    <style>
+        .tasks-wrapper {
+            max-width: 720px;
+            margin: 3rem auto;
+            padding: 0 1.5rem;
+            font-family: system-ui, -apple-system, BlinkMacOSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
 
-    .tasks-title {
-        font-size: 20px;
-        font-weight: bold;
-        margin-bottom: 15px;
-    }
+        .tasks-header {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
 
-    .tasks-list {
-        list-style: none;
-        padding: 0;
-    }
+        .tasks-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
 
-    .task-item {
-        background: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        padding: 12px;
-        margin-bottom: 10px;
-    }
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.25s ease;
+        }
 
-    .task-title {
-        font-weight: bold;
-        color: #333;
-    }
+        .task-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border-color: #cbd5e1;
+        }
 
-    .task-description {
-        display: block;
-        color: #666;
-        margin: 5px 0;
-    }
+        .task-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin: 0 0 0.5rem 0;
+        }
 
-    .task-link {
-        text-decoration: none;
-        color: #007bff;
-        font-size: 14px;
-    }
+        .task-title.completed {
+            text-decoration: line-through;
+            color: #6b7280;
+            opacity: 0.85;
+        }
 
-    .task-link:hover {
-        text-decoration: underline;
-    }
+        .task-description {
+            font-size: 1rem;
+            color: #4b5563;
+            line-height: 1.5;
+            margin: 0 0 1rem 0;
+        }
 
-    .no-tasks {
-        color: #999;
-        font-style: italic;
-    }
-</style>
+        .task-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
 
-<div class="tasks-container">
-    <div class="tasks-title">
-        The list of tasks:
+        .task-status {
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            font-weight: 500;
+        }
+
+        .task-status.completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .task-status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .task-link {
+            color: #2563eb;
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .task-link:hover {
+            color: #1d4ed8;
+            text-decoration: underline;
+        }
+
+        .no-tasks-message {
+            text-align: center;
+            padding: 4rem 1rem;
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            color: #64748b;
+            font-size: 1.125rem;
+            font-style: italic;
+        }
+    </style>
+
+    <div class="tasks-wrapper">
+        <h1 class="tasks-header">Mis Tareas</h1>
+
+        @if ($tasks->isNotEmpty())
+            <ul class="tasks-list">
+                @foreach ($tasks as $task)
+                    <li class="task-card">
+                        <h2 class="task-title {{ $task->completed ? 'completed' : '' }}">
+                            {{ $task->title }}
+                        </h2>
+
+                        <p class="task-description">
+                            {{ $task->description }}
+                        </p>
+
+                        <div class="task-footer">
+                            <span class="task-status {{ $task->completed ? 'completed' : 'pending' }}">
+                                {{ $task->completed ? 'Completada' : 'Pendiente' }}
+                            </span>
+
+                            <a href="{{ route('tasks.show', $task->id) }}" class="task-link">
+                                Ver detalles →
+                            </a>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        @else
+            <div class="no-tasks-message">
+                No hay tareas registradas aún.
+            </div>
+        @endif
     </div>
 
-    @if(count($tasks))
-        <ul class="tasks-list">
-            @foreach($tasks as $task)
-                <li class="task-item">
-                    <span class="task-title">{{ $task->title }}</span>
-                    <span class="task-description">{{ $task->description }}</span>
-                    <a class="task-link" href="{{ route('tasks.show', ['taskId' => $task->id]) }}">
-                        View Details
-                    </a>
-                </li>
-            @endforeach
-        </ul>
-    @else
-        <p class="no-tasks">No tasks!</p>
-    @endif
-</div>
+@endsection
