@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Task;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
 
@@ -57,7 +58,7 @@ use Illuminate\View\View;
 // ];
 
 Route::get('/', function (): View {
-    $tasks = Task::query()->where("completed", true)->get();
+    $tasks = Task::query()->where('completed', true)->get();
 
     return view('index', [
         'tasks' => $tasks,
@@ -72,9 +73,13 @@ Route::get('/task/{taskId}', function ($taskId): View {
     ]);
 })->name('tasks.show');
 
-// Route::get('/hello', function () {
-//     return 'Hello, World!';
-// });
+Route::view(('/tasks/create'), 'create')->name('tasks.create');
+
+Route::post('/tasks', function (Request $request) {
+    // dd Es una función para debuggear (inspeccionar variables) y luego detener la ejecución del programa.
+    // dd('We have reached the store route');
+    dd($request->all());
+})->name('tasks.store');
 
 // Route::get('/hello/{name}', function ($name) {
 //     return "Hello, {$name}!";
