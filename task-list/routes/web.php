@@ -74,23 +74,27 @@ Route::get('/task/{taskId}', function ($taskId): View {
 })->name('tasks.show');
 
 Route::view(('/tasks/create'), 'create')->name('tasks.create');
+// Route::view('/tasks/created', 'created')->name('tasks.created');
 
 Route::post('/tasks', function (Request $request) {
     // dd Es una función para debuggear (inspeccionar variables) y luego detener la ejecución del programa.
     // dd('We have reached the store route');
-    dd($request->all());
+    // dd($request->all());
+    $data = $request->validate([
+        'title' => 'required|max:255',
+        'description' => 'required',
+    ]);
+
+    $task = new Task;
+    $task->title = $data['title'];
+    $task->description = $data['description'];
+    // $task->long_description = $data['long_description'];
+    $task->save();
+
+    // return redirect()
+    //     ->route('tasks.created')
+    //     ->with('success', 'Task Successfully Created!');
+
+    
+    return redirect()->route('tasks.show', ['taskId' => $task->id]);
 })->name('tasks.store');
-
-// Route::get('/hello/{name}', function ($name) {
-//     return "Hello, {$name}!";
-// });
-
-// Route::redirect('/hallo', '/hello');
-
-// Route::get('/total', function () {
-//     return redirect('/hello');
-// });
-
-// Route::fallback(function () {
-//     return '404 Not Found';
-// });
