@@ -76,14 +76,22 @@ Route::get('/task/{taskId}', function ($taskId): View {
 Route::view(('/tasks/create'), 'create')->name('tasks.create');
 // Route::view('/tasks/created', 'created')->name('tasks.created');
 
+Route::get('/task/{taskId}/edit', function ($taskId): View {
+    $task = Task::findOrFail($taskId);
+
+    return view('edit', [
+        'task' => $task,
+    ]);
+})->name('tasks.edit');
+
 Route::post('/tasks', function (Request $request) {
     // dd Es una función para debuggear (inspeccionar variables) y luego detener la ejecución del programa.
     // dd('We have reached the store route');
     // dd($request->all());
     $data = $request->validate([
-        'title'       => 'required|string|max:255',
+        'title' => 'required|string|max:255',
         'description' => 'required|string',
-        'long_description' => 'required|string'
+        'long_description' => 'required|string',
     ]);
 
     $task = new Task;
@@ -96,7 +104,26 @@ Route::post('/tasks', function (Request $request) {
     //     ->route('tasks.created')
     //     ->with('success', 'Task Successfully Created!');
 
-    
-    return redirect()->route('tasks.show', ['taskId' => $task->taskId])
-                     ->with('success', '¡Tarea creada exitosamente!');
+    return redirect()->route('tasks.show', ['taskId' => $task->id])
+        ->with('success', '¡Tarea creada exitosamente!');
 })->name('tasks.store');
+
+Route::put('/tasks/{taskId}', function (Request $request, $taskId) {
+    // dd Es una función para debuggear (inspeccionar variables) y luego detener la ejecución del programa.
+    // dd('We have reached the store route');
+    // dd($request->all());
+    $data = $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'required|string',
+        'long_description' => 'required|string',
+    ]);
+
+    $task = Task::findOrFail($taskId);
+    $task->title = $data['title'];
+    $task->description = $data['description'];
+    $task->long_description = $data['long_description'];
+    $task->save();
+
+    return redirect()->route('tasks.show', ['taskId' => $task->id])
+        ->with('success', '¡Tarea actualizada exitosamente!');
+})->name('tasks.update');
