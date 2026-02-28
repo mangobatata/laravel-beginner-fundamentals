@@ -17,6 +17,7 @@
         @method("PUT")
         <div>
             <label for="title">
+                
                 Title
             </label>
             <input text="text" name="title" id="title" value="{{ $task->title }}" />
