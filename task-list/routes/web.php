@@ -2,7 +2,6 @@
 
 use App\Http\Requests\TaskRequest;
 use App\Models\Task;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
 
@@ -85,27 +84,46 @@ Route::get('/task/{taskId}/edit', function ($taskId): View {
     ]);
 })->name('tasks.edit');
 
-Route::post('/tasks', function (TaskRequest $request) {
-    $data = $request->validated();
+// Forma 1 de hacerlo
+// Route::post('/tasks', function (TaskRequest $request) {
+//     $data = $request->validated();
 
-    $task = new Task;
-    $task->title = $data['title'];
-    $task->description = $data['description'];
-    $task->long_description = $data['long_description'];
-    $task->save();
+//     $task = new Task;
+//     $task->title = $data['title'];
+//     $task->description = $data['description'];
+//     $task->long_description = $data['long_description'];
+//     $task->save();
+
+//     return redirect()->route('tasks.show', ['taskId' => $task->id])
+//         ->with('success', '¡Tarea creada exitosamente!');
+// })->name('tasks.store');
+
+// Forma 2 de hacerlo
+Route::post('/tasks', function (TaskRequest $request) {
+    $task = Task::create($request->validated());
 
     return redirect()->route('tasks.show', ['taskId' => $task->id])
         ->with('success', '¡Tarea creada exitosamente!');
 })->name('tasks.store');
 
-Route::put('/tasks/{taskId}', function (TaskRequest $request, $taskId) {
-    $data = $request->validated();
+// Forma 1 de hacerlo
+// Route::put('/tasks/{taskId}', function (TaskRequest $request, $taskId) {
+//     $data = $request->validated();
 
+//     $task = Task::findOrFail($taskId);
+//     $task->title = $data['title'];
+//     $task->description = $data['description'];
+//     $task->long_description = $data['long_description'];
+//     $task->save();
+
+//     return redirect()->route('tasks.show', ['taskId' => $task->id])
+//         ->with('success', '¡Tarea actualizada exitosamente!');
+// })->name('tasks.update');
+
+// Forma 2 de hacerlo
+Route::put('/tasks/{taskId}', function (TaskRequest $request, $taskId) {
     $task = Task::findOrFail($taskId);
-    $task->title = $data['title'];
-    $task->description = $data['description'];
-    $task->long_description = $data['long_description'];
-    $task->save();
+    $task->update($request->validated());
 
     return redirect()->route('tasks.show', ['taskId' => $task->id])
         ->with('success', '¡Tarea actualizada exitosamente!');
