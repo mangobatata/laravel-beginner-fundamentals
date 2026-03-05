@@ -128,3 +128,10 @@ Route::put('/tasks/{taskId}', function (TaskRequest $request, $taskId) {
     return redirect()->route('tasks.show', ['taskId' => $task->id])
         ->with('success', '¡Tarea actualizada exitosamente!');
 })->name('tasks.update');
+
+Route::delete("/tasks/{task}", function (Task $task) {
+    $task->delete();
+
+    return redirect()->route('tasks.index')
+        ->with('success', '¡Tarea eliminada exitosamente!');
+})->name('tasks.destroy');

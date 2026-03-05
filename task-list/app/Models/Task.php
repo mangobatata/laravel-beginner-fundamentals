@@ -9,6 +9,7 @@ class Task extends Model
 {
     use HasFactory;
 
+    // $fillable  le dice a Laravel qué campos pueden asignarse masivamente.
     protected $fillable = [
         'title',
         'description',
