@@ -1,11 +1,8 @@
 @extends('layouts.app')
 
-@section("title")
-  {{ $task->title }}
-@endsection
+@section('title', $task->title)
 
-@section("content")
-  <h1>{{ $task->title }}</h1>
+@section('content')
   <p>{{ $task->description }}</p>
 
   @if ($task->long_description)
@@ -19,7 +16,7 @@
     <form action="{{ route('tasks.destroy', ['task' => $task->id]) }}" method="POST">
       @csrf
       @method('DELETE')
-      <button type="submit">Eliminar</button>
+      <button type="submit">Delete</button>
     </form>
   </div>
 @endsection
