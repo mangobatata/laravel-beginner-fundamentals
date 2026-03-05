@@ -12,9 +12,11 @@
 @endsection
 
 @section('content')
-  <form method="POST"
-    action="{{ isset($task) ? route('tasks.update', ['task' => $task->id]) : route('tasks.store') }}">
+  <form method="POST" action="{{ isset($task) ? route('tasks.update', ['task' => $task->id]) : route('tasks.store') }}">
+    {{-- @csrf Protege tu aplicación contra el ataque llamado
+    Cross-Site Request Forgery. Ese ataque ocurre cuando alguien intenta enviar un formulario a tu aplicación sin permiso desde otro sitio web. --}}
     @csrf
+    {{-- @isset($task) se usa para verificar si la variable $task existe y no es null. --}}
     @isset($task)
       @method('PUT')
     @endisset
@@ -22,8 +24,7 @@
       <label for="title">
         Title
       </label>
-      <input text="text" name="title" id="title"
-        value="{{ $task->title ?? old('title') }}" />
+      <input text="text" name="title" id="title" value="{{ $task->title ?? old('title') }}" />
       @error('title')
         <p class="error-message">{{ $message }}</p>
       @enderror
@@ -31,8 +32,7 @@
 
     <div>
       <label for="description">Description</label>
-      <textarea name="description" id="description"
-        rows="5">{{ $task->description ?? old('description') }}</textarea>
+      <textarea name="description" id="description" rows="5">{{ $task->description ?? old('description') }}</textarea>
       @error('description')
         <p class="error-message">{{ $message }}</p>
       @enderror
