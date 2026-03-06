@@ -12,14 +12,24 @@ class BookController extends Controller
      */
     public function index(Request $request)
     {
+        // Obtiene el valor del parámetro "title" enviado en la URL o en el formulario.
+        // Ejemplo: /books?title=harry
         $title = $request->input('title');
 
+        // Consulta los libros en la base de datos
         $books = Book::when(
-            $title,
-            fn($query, $title) => $query->title($title)
-        )
-            ->get();
+            $title, // Condición: si $title tiene un valor (no es null o vacío)
 
+            // Si existe $title, se ejecuta esta función
+            // $query es el constructor de consultas de Eloquent
+            // $title es el valor recibido del request
+            fn($query, $title) => $query->title($title)
+            // Se aplica el scope "title" del modelo Book para filtrar libros por título
+        )
+            ->get(); // Ejecuta la consulta y obtiene los resultados
+
+        // Retorna la vista "books.index"
+        // y le pasa la variable $books con los resultados
         return view('books.index', ['books' => $books]);
     }
 
