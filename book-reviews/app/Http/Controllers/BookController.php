@@ -15,6 +15,7 @@ class BookController extends Controller
         // Obtiene el valor del parámetro "title" enviado en la URL o en el formulario.
         // Ejemplo: /books?title=harry
         $title = $request->input('title');
+        $filter = $request->input('filter', '');
 
         // Consulta los libros en la base de datos
         $books = Book::when(
@@ -25,8 +26,17 @@ class BookController extends Controller
             // $title es el valor recibido del request
             fn($query, $title) => $query->title($title)
             // Se aplica el scope "title" del modelo Book para filtrar libros por título
-        )
-            ->get(); // Ejecuta la consulta y obtiene los resultados
+        );
+
+
+        $books = match ($filter) {
+            'popular_last_month' => $books->popularLastMonth(),
+            'popular_last_6months' => $books->popularLast6Months(),
+            'highest_rated_last_month' => $books->highestRatedLastMonth(),
+            'highest_rated_last_6months' => $books->highestRatedLast6Months(),
+            default => $books->latest()
+        };
+        $books = $books->get();
 
         // Retorna la vista "books.index"
         // y le pasa la variable $books con los resultados
