@@ -11,22 +11,46 @@
     </form>
 
     <div class="filter-container mb-4 flex">
+        {{-- En Blade (Laravel) se usa @php ... @endphp cuando necesitas ejecutar código PHP directamente dentro de la
+        vista. --}}
         @php
+            // Se define un array asociativo con los filtros disponibles.
+            // La clave ($key) se enviará en la URL como parámetro "filter"
+            // y el valor ($label) es el texto que verá el usuario.
+
             $filters = [
-                '' => 'Latest',
-                'popular_last_month' => 'Popular Last Month',
-                'popular_last_6months' => 'Popular Last 6 Months',
-                'highest_rated_last_month' => 'Highest Rated Last Month',
-                'highest_rated_last_6months' => 'Highest Rated Last 6 Months',
+                '' => 'Latest', // Muestra los libros más recientes (sin filtro específico)
+                'popular_last_month' => 'Popular Last Month', // Libros más populares del último mes
+                'popular_last_6months' => 'Popular Last 6 Months', // Libros más populares de los últimos 6 meses
+                'highest_rated_last_month' => 'Highest Rated Last Month', // Mejor calificados del último mes
+                'highest_rated_last_6months' => 'Highest Rated Last 6 Months', // Mejor calificados de los últimos 6 meses
             ];
         @endphp
 
         @foreach ($filters as $key => $label)
+
+            {{--
+            Se crea un enlace para cada filtro.
+
+            route('books.index', [...request()->query(), 'filter' => $key])
+
+            Explicación:
+            - route('books.index') genera la URL hacia la página de libros.
+            - request()->query() obtiene los parámetros actuales de la URL.
+            - ...request()->query() mantiene los parámetros existentes (por ejemplo la búsqueda).
+            - 'filter' => $key agrega o cambia el filtro seleccionado.
+
+            Ejemplo de resultado en la URL:
+            /books?filter=popular_last_month
+            --}}
+
             <a href="{{ route('books.index', [...request()->query(), 'filter' => $key]) }}"
                 class="{{ request('filter') === $key || (request('filter') === null && $key === '') ? 'filter-item-active' : 'filter-item' }}">
                 {{ $label }}
             </a>
+
         @endforeach
+
     </div>
 
     <ul>
