@@ -29,6 +29,18 @@ class Review extends Model
     // Sirve para registrar eventos del modelo (updated, deleted, etc.)
     protected static function booted()
     {
+        // ================================================
+        // protected static function booted()
+        //
+        // protected   -> Solo puede ser usado dentro de esta clase o sus subclases (no desde afuera)
+        // static      -> Pertenece a la clase, no a una instancia específica del modelo
+        // function    -> Define un método o función en PHP
+        //
+        // En conjunto:
+        // Este método se ejecuta automáticamente al inicializar el modelo y
+        // se usa para registrar eventos como updated o deleted de manera global.
+        // ================================================
+
 
         // Evento que se dispara cuando una review se actualiza
         static::updated(
