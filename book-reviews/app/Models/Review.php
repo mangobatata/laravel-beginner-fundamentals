@@ -24,4 +24,24 @@ class Review extends Model
         // Define la relación: Review "pertenece a" Book
         return $this->belongsTo(Book::class);
     }
+
+    // Este método se ejecuta automáticamente cuando el modelo se inicializa
+    // Sirve para registrar eventos del modelo (updated, deleted, etc.)
+    protected static function booted()
+    {
+
+        // Evento que se dispara cuando una review se actualiza
+        static::updated(
+            fn(Review $review) =>
+            // Borra del cache la clave del libro relacionado para mantener los datos actualizados
+            cache()->forget('book:' . $review->book_id)
+        );
+
+        // Evento que se dispara cuando una review se elimina
+        static::deleted(
+            fn(Review $review) =>
+            // Borra del cache la clave del libro relacionado para que el próximo acceso genere cache nuevo
+            cache()->forget('book:' . $review->book_id)
+        );
+    }
 }

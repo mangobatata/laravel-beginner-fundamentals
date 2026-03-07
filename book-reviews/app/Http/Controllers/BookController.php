@@ -36,7 +36,11 @@ class BookController extends Controller
             'highest_rated_last_6months' => $books->highestRatedLast6Months(),
             default => $books->latest()
         };
-        $books = $books->get();
+        // $books = $books->get();
+
+        // utiliza el sistema de cache para guardar el resultado de una consulta y evitar que la base de datos se consulte repetidamente.
+        $cacheKey = 'books:' . $filter . ':' . $title;
+        $books = cache()->remember($cacheKey, 3600, fn() => $books->get());
 
         // Retorna la vista "books.index"
         // y le pasa la variable $books con los resultados
@@ -64,14 +68,28 @@ class BookController extends Controller
      */
     public function show(Book $book)
     {
-        return view(
-            'books.show',
-            [
-                'book' => $book->load([
-                    'reviews' => fn($query) => $query->latest()
-                ])
-            ]
-        );
+        // return view(
+        //     'books.show',
+        //     [
+        //         'book' => $book->load([
+        //             'reviews' => fn($query) => $query->latest()
+        //         ])
+        //     ]
+        // );
+
+        // Creamos una clave única para el cache usando el id del libro
+        $cacheKey = 'book:' . $book->id;
+
+        // Guardamos el resultado en cache por 3600 segundos (1 hora)
+        // Si el cache ya existe, se devuelve directamente sin consultar la base de datos
+        // Si no existe, se ejecuta la función que carga el libro con sus reviews
+        $book = cache()->remember($cacheKey, 3600, fn() => $book->load([
+            // Cargamos la relación "reviews" ordenada por las más recientes
+            'reviews' => fn($query) => $query->latest()
+        ]));
+
+        // Enviamos el libro (posiblemente obtenido del cache) a la vista
+        return view('books.show', ['book' => $book]);
     }
 
     /**
