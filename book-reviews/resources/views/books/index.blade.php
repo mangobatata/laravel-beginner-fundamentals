@@ -1,85 +1,125 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1 class="mb-10 text-2xl">Books</h1>
 
-    <form method="GET" action="{{ route('books.index') }}" class="mb-4 flex items-center space-x-2">
-        <input type="text" name="title" placeholder="Search by title" value="{{ request('title') }}" class="input h-10" />
+    {{-- ── Encabezado de la página ──────────────────────────── --}}
+    <div class="mb-8">
+        <h1 class="font-display text-3xl font-bold text-stone-900">Books</h1>
+        <p class="mt-1 text-sm text-stone-400 font-light">Browse and discover your next great read</p>
+    </div>
+
+
+    {{-- ── Formulario de búsqueda ───────────────────────────── --}}
+    {{-- Se envía por GET para mantener los parámetros en la URL y poder compartir resultados --}}
+    <form method="GET" action="{{ route('books.index') }}" class="mb-5 flex items-center gap-2">
+
+        {{-- Campo de texto para filtrar por título --}}
+        <input type="text" name="title" placeholder="Search by title…" value="{{ request('title') }}"
+            class="input h-10 flex-1" />
+
+        {{-- Mantiene el filtro activo al realizar una búsqueda --}}
         <input type="hidden" name="filter" value="{{ request('filter') }}" />
-        <button type="submit" class="btn h-10">Search</button>
-        <a href="{{ route('books.index') }}" class="btn h-10">Clear</a>
+
+        {{-- Botón de búsqueda --}}
+        <button type="submit" class="btn">Search</button>
+
+        {{-- Botón para limpiar todos los filtros --}}
+        <a href="{{ route('books.index') }}" class="btn-outline">Clear</a>
+
     </form>
 
-    <div class="filter-container mb-4 flex">
-        {{-- En Blade (Laravel) se usa @php ... @endphp cuando necesitas ejecutar código PHP directamente dentro de la
-        vista. --}}
-        @php
-            // Se define un array asociativo con los filtros disponibles.
-            // La clave ($key) se enviará en la URL como parámetro "filter"
-            // y el valor ($label) es el texto que verá el usuario.
 
+    {{-- ── Filtros de ordenamiento ──────────────────────────── --}}
+    <div class="filter-container mb-6">
+
+        @php
+            /*
+             * Array asociativo con los filtros disponibles.
+             * Clave ($key)   → se envía en la URL como parámetro "filter"
+             * Valor ($label) → texto visible para el usuario
+             */
             $filters = [
-                '' => 'Latest', // Muestra los libros más recientes (sin filtro específico)
-                'popular_last_month' => 'Popular Last Month', // Libros más populares del último mes
-                'popular_last_6months' => 'Popular Last 6 Months', // Libros más populares de los últimos 6 meses
-                'highest_rated_last_month' => 'Highest Rated Last Month', // Mejor calificados del último mes
-                'highest_rated_last_6months' => 'Highest Rated Last 6 Months', // Mejor calificados de los últimos 6 meses
+                '' => 'Latest',
+                'popular_last_month' => 'Popular · Month',
+                'popular_last_6months' => 'Popular · 6 Months',
+                'highest_rated_last_month' => 'Top Rated · Month',
+                'highest_rated_last_6months' => 'Top Rated · 6 Months',
             ];
         @endphp
 
         @foreach ($filters as $key => $label)
-
             {{--
-            Se crea un enlace para cada filtro.
+            Enlace para activar cada filtro.
 
             route('books.index', [...request()->query(), 'filter' => $key])
 
-            Explicación:
-            - route('books.index') genera la URL hacia la página de libros.
-            - request()->query() obtiene los parámetros actuales de la URL.
-            - ...request()->query() mantiene los parámetros existentes (por ejemplo la búsqueda).
-            - 'filter' => $key agrega o cambia el filtro seleccionado.
+            Desglose:
+            - request()->query() → conserva todos los parámetros actuales (p.ej. la búsqueda por título)
+            - 'filter' => $key → sobreescribe o añade el filtro seleccionado
 
-            Ejemplo de resultado en la URL:
-            /books?filter=popular_last_month
+            Resultado en URL:
+            /books?title=dune&filter=popular_last_month
             --}}
-
-            <a href="{{ route('books.index', [...request()->query(), 'filter' => $key]) }}"
-                class="{{ request('filter') === $key || (request('filter') === null && $key === '') ? 'filter-item-active' : 'filter-item' }}">
+            <a href="{{ route('books.index', [...request()->query(), 'filter' => $key]) }}" class="{{ request('filter') === $key || (request('filter') === null && $key === '')
+                ? 'filter-item-active'
+                : 'filter-item' }}">
                 {{ $label }}
             </a>
-
         @endforeach
 
     </div>
 
-    <ul>
+
+    {{-- ── Lista de libros ──────────────────────────────────── --}}
+    <ul class="space-y-3">
+
+        {{-- @forelse muestra los libros si existen; si no, entra en @empty --}}
         @forelse ($books as $book)
-            <li class="mb-4">
+            <li>
                 <div class="book-item">
-                    <div class="flex flex-wrap items-center justify-between">
-                        <div class="w-full flex-grow sm:w-auto">
-                            <a href="{{ route('books.show', $book) }}" class="book-title">{{ $book->title }}</a>
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+
+                        {{-- Información principal: título y autor --}}
+                        <div class="min-w-0 flex-1">
+                            <a href="{{ route('books.show', $book) }}" class="book-title">
+                                {{ $book->title }}
+                            </a>
                             <span class="book-author">by {{ $book->author }}</span>
                         </div>
-                        <div>
-                            <div class="book-rating">
-                                {{ number_format($book->reviews_avg_rating, 1) }}
+
+                        {{-- Puntuación y conteo de reseñas --}}
+                        <div class="flex flex-col items-end gap-0.5">
+
+                            {{-- Rating con icono de estrella --}}
+                            <div class="flex items-center gap-1">
+                                <span class="text-amber-500 text-sm">★</span>
+                                <span class="book-rating">
+                                    {{ number_format($book->reviews_avg_rating, 1) }}
+                                </span>
                             </div>
+
+                            {{-- Número de reseñas --}}
                             <div class="book-review-count">
-                                out of {{ $book->reviews_count }} {{ Str::plural('review', $book->reviews_count) }}
+                                {{ $book->reviews_count }} {{ Str::plural('review', $book->reviews_count) }}
                             </div>
+
                         </div>
                     </div>
                 </div>
             </li>
+
         @empty
-            <li class="mb-4">
+            {{-- Estado vacío cuando no hay resultados --}}
+            <li>
                 <div class="empty-book-item">
-                    <p class="empty-text">No books found</p>
+                    <p class="text-3xl mb-3">📭</p>
+                    <p class="empty-text font-semibold text-base mb-1">No books found</p>
+                    <p class="text-xs text-stone-400 mb-4">Try adjusting your search or filters</p>
                     <a href="{{ route('books.index') }}" class="reset-link">Reset criteria</a>
                 </div>
             </li>
         @endforelse
+
     </ul>
+
 @endsection
