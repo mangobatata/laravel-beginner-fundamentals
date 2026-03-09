@@ -35,6 +35,21 @@ class Book extends Model
         return $query->where('title', 'LIKE', '%' . $title . '%');
     }
 
+
+    public function scopeWithReviewsCount(Builder $query, $from = null, $to = null): Builder|QueryBuilder
+    {
+        return $query->withCount([
+            "reviews" => fn(Builder $q) => $this->dateRangeFilter($q, $from, $to)
+        ]);
+    }
+
+    public function scopeWithAvgRating(Builder $query, $from = null, $to = null): Builder|QueryBuilder
+    {
+        return $query->withAvg([
+            'reviews' => fn(Builder $q) => $this->dateRangeFilter($q, $from, $to)
+        ], 'rating');
+    }
+
     /**
      * SCOPE: Ordenar libros por cantidad de reviews (más popular primero).
      *
@@ -51,12 +66,12 @@ class Book extends Model
      */
     public function scopePopular(Builder $query, $from = null, $to = null): Builder|QueryBuilder
     {
-        return $query->withCount([
+        return $query->withReviewsCount([
             // La clave 'reviews' hace referencia a la relación definida arriba.
             // La función callback recibe el subquery de reviews y le aplica el filtro de fechas.
             'reviews' => fn(Builder $q) => $this->dateRangeFilter($q, $from, $to)
         ])
-        ->orderBy('reviews_count', 'desc'); // Más reviews primero
+            ->orderBy('reviews_count', 'desc'); // Más reviews primero
     }
 
     /**
@@ -75,11 +90,8 @@ class Book extends Model
      */
     public function scopeHighestRated(Builder $query, $from = null, $to = null): Builder|QueryBuilder
     {
-        return $query->withAvg([
-            // Igual que withCount, el callback aplica el filtro de fechas al subquery
-            'reviews' => fn(Builder $q) => $this->dateRangeFilter($q, $from, $to)
-        ], 'rating') // 'rating' es el campo del que se calculará el promedio
-        ->orderBy('reviews_avg_rating', 'desc'); // Mayor rating primero
+        return $query->withAvgRating()
+            ->orderBy('reviews_avg_rating', 'desc');
     }
 
     /**
