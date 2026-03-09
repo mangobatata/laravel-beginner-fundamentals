@@ -79,8 +79,12 @@
 
                   {{-- Valor numérico del rating junto a las estrellas --}}
                   <span class="ml-1.5 text-xs font-semibold text-amber-700">
-                    {{ $review->rating }}/5
+                    {{-- {{ $review->rating }}/5 --}}
+                    <x-star-rating :rating="$review->rating" />
                   </span>
+                  <div class="font-semibold">
+
+                  </div>
               </div>
 
               {{-- Fecha de publicación de la reseña --}}

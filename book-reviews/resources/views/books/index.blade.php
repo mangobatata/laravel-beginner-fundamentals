@@ -94,8 +94,10 @@
                             <div class="flex items-center gap-1">
                                 <span class="text-amber-500 text-sm">★</span>
                                 <span class="book-rating">
-                                    {{ number_format($book->reviews_avg_rating, 1) }}
+                                    {{-- {{ number_format($book->reviews_avg_rating, 1) }} --}}
+                                    <x-star-rating :rating="$book->reviews_avg_rating" />
                                 </span>
+
                             </div>
 
                             {{-- Número de reseñas --}}
