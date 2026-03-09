@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +22,27 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // ── Reviews: máx 5 por 10 minutos por IP ──────────────────
+        RateLimiter::for('create-review', function (Request $request) {
+            return Limit::perMinutes(10, 5)
+                ->by($request->ip())
+                ->response(function () {
+                    return back()
+                        ->withErrors(['review' => 'Too many reviews submitted. Please wait a few minutes.'])
+                        ->withInput();
+                });
+        });
+
+        // ── Búsqueda de libros: máx 60 por minuto por IP ──────────
+        RateLimiter::for('books-search', function (Request $request) {
+            return Limit::perMinute(60)
+                ->by($request->ip());
+        });
+
+        // ── Detalle de libro: máx 120 por minuto por IP ───────────
+        RateLimiter::for('books-show', function (Request $request) {
+            return Limit::perMinute(120)
+                ->by($request->ip());
+        });
     }
 }

@@ -14,10 +14,20 @@ Route::get('/', function () {
 
 // Route::resource('books', BookController::class);
 
+// ── Libros ────────────────────────────────────────────────────
 Route::resource('books', BookController::class)
-    ->only(['index', 'show']);
+    ->only(['index', 'show'])
+    ->middleware([
+        'index' => 'throttle:books-search',
+        'show' => 'throttle:books-show',
+    ]);
 
-
+// ── Reviews ───────────────────────────────────────────────────
+// create no necesita rate limiter (solo muestra el formulario)
+// store sí lo necesita (escribe en la DB)
 Route::resource('books.reviews', ReviewController::class)
     ->scoped(['book'])
-    ->only(['create', 'store']);
+    ->only(['create', 'store'])
+    ->middleware([
+        'store' => 'throttle:create-review',
+    ]);
