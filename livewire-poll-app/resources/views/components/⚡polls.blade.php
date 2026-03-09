@@ -5,7 +5,6 @@ use Livewire\Attributes\On;
 use App\Models\Poll;
 use App\Models\Option;
 use App\Models\Vote;
-use Illuminate\Support\Facades\Request;
 
 new class extends Component {
 
@@ -27,7 +26,7 @@ new class extends Component {
 
     public function vote(int $optionId): void
     {
-        $voterIp = Request::ip();
+        $voterIp = request()->ip();
         $option = Option::with('poll.options')->findOrFail($optionId);
 
         $alreadyVoted = Vote::whereIn('option_id', $option->poll->options->pluck('id'))
