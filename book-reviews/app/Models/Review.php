@@ -10,6 +10,12 @@ class Review extends Model
     // HasFactory → trait que permite crear fábricas para pruebas o seeders
     use HasFactory;
 
+    protected $fillable = [
+        'book_id',
+        'rating',
+        'review',
+    ];
+
     /**
      * Relación con Book
      *

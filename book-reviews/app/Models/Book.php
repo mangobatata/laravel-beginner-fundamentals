@@ -66,12 +66,9 @@ class Book extends Model
      */
     public function scopePopular(Builder $query, $from = null, $to = null): Builder|QueryBuilder
     {
-        return $query->withReviewsCount([
-            // La clave 'reviews' hace referencia a la relación definida arriba.
-            // La función callback recibe el subquery de reviews y le aplica el filtro de fechas.
-            'reviews' => fn(Builder $q) => $this->dateRangeFilter($q, $from, $to)
-        ])
-            ->orderBy('reviews_count', 'desc'); // Más reviews primero
+        return $query
+            ->withReviewsCount($from, $to)   // ✅ Pasa $from y $to directamente
+            ->orderBy('reviews_count', 'desc');
     }
 
     /**
@@ -90,7 +87,8 @@ class Book extends Model
      */
     public function scopeHighestRated(Builder $query, $from = null, $to = null): Builder|QueryBuilder
     {
-        return $query->withAvgRating()
+        return $query
+            ->withAvgRating($from, $to)      // ✅ Pasa $from y $to directamente
             ->orderBy('reviews_avg_rating', 'desc');
     }
 

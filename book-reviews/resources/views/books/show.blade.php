@@ -9,6 +9,11 @@
     <span class="text-stone-600 font-medium">{{ $book->title }}</span>
   </nav>
 
+   <div class="mb-4">
+    <a href="{{ route('books.reviews.create', $book) }}" class="reset-link">
+      Add a review!</a>
+  </div>
+
 
   {{-- ── Cabecera del libro ───────────────────────────────── --}}
   <div class="mb-8 rounded-2xl bg-white ring-1 ring-stone-200 shadow-sm p-6">

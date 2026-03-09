@@ -40,7 +40,7 @@ class BookController extends Controller
 
 
         // utiliza el sistema de cache para guardar el resultado de una consulta y evitar que la base de datos se consulte repetidamente.
-        $cacheKey = 'books:' . $filter . ':' . $title;
+        $cacheKey = 'books:' . $filter . ':' . ($title ?? '');  // ✅ null-safe
         $books = cache()->remember($cacheKey, 3600, fn() => $books->get());
         // $books = $books->get();
 
