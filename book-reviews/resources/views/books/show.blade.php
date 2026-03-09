@@ -69,22 +69,14 @@
 
               {{-- Estrellas generadas dinámicamente según el rating (1–5) --}}
               <div class="flex items-center gap-1">
+                {{-- Valor numérico del rating junto a las estrellas --}}
+                <span class="ml-1.5 text-xs font-semibold text-amber-700">
+                  {{-- {{ $review->rating }}/5 --}}
+                  <x-star-rating :rating="$review->rating" />
+                </span>
+                <div class="font-semibold">
 
-                @for ($i = 1; $i <= 5; $i++)
-                  {{-- Estrella llena si el índice <= rating; vacía en caso contrario --}} <span
-                    class="{{ $i <= $review->rating ? 'star-fill' : 'star-empty' }} text-sm">
-                    ★
-                    </span>
-                @endfor
-
-                  {{-- Valor numérico del rating junto a las estrellas --}}
-                  <span class="ml-1.5 text-xs font-semibold text-amber-700">
-                    {{-- {{ $review->rating }}/5 --}}
-                    <x-star-rating :rating="$review->rating" />
-                  </span>
-                  <div class="font-semibold">
-
-                  </div>
+                </div>
               </div>
 
               {{-- Fecha de publicación de la reseña --}}
