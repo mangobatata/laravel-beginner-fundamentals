@@ -2,6 +2,8 @@
 
 use Livewire\Attributes\Validate;
 use Livewire\Component;
+use App\Models\Poll;
+use Illuminate\Support\Facades\DB;
 
 new class extends Component {
 
@@ -11,81 +13,114 @@ new class extends Component {
     #[Validate('required|min:13|max:255')]
     public string $content = '';
 
-    public array $options = ['First'];
+    #[Validate(['options' => 'required|array|min:2', 'options.*' => 'required|string|min:1|max:255'])]
+    public array $options = ['', ''];
 
-    // public function save()
-    // {
-    //     // ✅ Con #[Validate] ya definido arriba, solo llamar $this->validate()
-    //     // sin repetir las reglas — evita conflictos y duplicación
-    //     $this->validate();
-
-    //     $this->reset('title', 'content');
-    // }
-
-    public function addOption()
+    public function addOption(): void
     {
         $this->options[] = '';
     }
 
-    public function removeOption($index)
+    public function removeOption(int $index): void
     {
+        if (count($this->options) <= 2)
+            return;
         unset($this->options[$index]);
         $this->options = array_values($this->options);
+    }
+
+    public function createPoll(): void
+    {
+        $this->validate();
+
+        DB::transaction(function () {
+            $poll = Poll::create([
+                'title' => $this->title,
+                'content' => $this->content,
+            ]);
+
+            $poll->options()->createMany(
+                collect($this->options)
+                    ->filter()
+                    ->map(fn($name) => ['name' => $name])
+                    ->values()
+                    ->toArray()
+            );
+        });
+
+        $this->reset(['title', 'content', 'options']);
+        $this->options = ['', ''];
+        $this->dispatch('pollCreated');
+        session()->flash('success', 'Poll created!');
     }
 };
 ?>
 
-<div class="bg-white rounded-2xl shadow-sm ring-1 ring-stone-200 p-6">
-    <h1 class="text-2xl font-bold text-stone-900 mb-6">Create Poll</h1>
+<div class="bg-white border border-zinc-200 rounded-2xl p-7">
 
-    {{-- ✅ wire:submit llama a save(), no a $refresh --}}
-    <form wire:submit="save">
+    @if (session('success'))
+        <div class="mb-5 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-xs text-emerald-700 font-mono">
+            ✓ {{ session('success') }}
+        </div>
+    @endif
+
+    <form wire:submit="createPoll">
 
         {{-- Title --}}
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-stone-700 mb-1">
-                Poll Title
-            </label>
-            <input type="text" wire:model.live="title" placeholder="e.g. What's your favorite language?"
-                class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400" />
+        <div class="mb-5">
+            <label class="block font-mono text-[10px] uppercase tracking-widest text-zinc-400 mb-2">Title</label>
+            <input type="text" wire:model.live="title" placeholder="What do you want to ask?"
+                class="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-zinc-900 focus:bg-white transition-colors placeholder:text-zinc-300" />
             @error('title')
-                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                <p class="mt-1.5 text-[11px] text-red-500 font-mono">{{ $message }}</p>
             @enderror
-            @if($title)
-                <p class="mt-1 text-xs text-stone-400">
-                    Preview: <span class="font-medium text-stone-700">{{ $title }}</span>
-                </p>
-            @endif
         </div>
 
         {{-- Content --}}
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-stone-700 mb-1">
-                Content
-            </label>
-            <textarea wire:model.live="content" rows="5" placeholder="Describe your poll..."
-                class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"></textarea>
+        <div class="mb-5">
+            <label class="block font-mono text-[10px] uppercase tracking-widest text-zinc-400 mb-2">Description</label>
+            <textarea wire:model.live="content" rows="3" placeholder="Add some context..."
+                class="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-zinc-900 focus:bg-white transition-colors placeholder:text-zinc-300 resize-none"></textarea>
             @error('content')
-                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                <p class="mt-1.5 text-[11px] text-red-500 font-mono">{{ $message }}</p>
             @enderror
-            @if($content)
-                <p class="mt-1 text-xs text-stone-400">
-                    Preview: <span class="font-medium text-stone-700">{{ $content }}</span>
-                </p>
-            @endif
         </div>
 
-        <div class="mb-4 mt-4">
-            <button class="btn" wire:click.prevent="addOption">Add Option</button>
+        {{-- Options --}}
+        <div class="mb-6">
+            <label class="block font-mono text-[10px] uppercase tracking-widest text-zinc-400 mb-2">Options</label>
+
+            <div class="space-y-2">
+                @foreach ($options as $index => $option)
+                    <div class="flex items-center gap-2">
+                        <span class="font-mono text-[10px] text-zinc-300 w-4 shrink-0">{{ $index + 1 }}</span>
+                        <input type="text" wire:model.live="options.{{ $index }}" placeholder="Option {{ $index + 1 }}"
+                            class="flex-1 bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-zinc-900 focus:bg-white transition-colors placeholder:text-zinc-300" />
+                        @if (count($options) > 2)
+                            <button wire:click.prevent="removeOption({{ $index }})"
+                                class="text-zinc-300 hover:text-red-400 font-mono text-xs transition-colors px-1">✕</button>
+                        @endif
+                    </div>
+                    @error("options.{$index}")
+                        <p class="ml-6 text-[11px] text-red-500 font-mono">{{ $message }}</p>
+                    @enderror
+                @endforeach
+            </div>
+
+            @error('options')
+                <p class="mt-1.5 text-[11px] text-red-500 font-mono">{{ $message }}</p>
+            @enderror
+
+            <button wire:click.prevent="addOption"
+                class="mt-3 font-mono text-[11px] text-zinc-400 hover:text-zinc-900 tracking-wide transition-colors">
+                + add option
+            </button>
         </div>
-        <div>
-            @foreach ($options as $index => $option)
-                <div class="mb-4">
-                    <input type="text" wire:model.live="options.{{ $index }}" placeholder="Option {{ $index + 1 }}"
-                        class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400" />
-                    <button class="btn" wire:click.prevent="removeOption({{ $index }})">Remove</button>
-                </div>
-            @endforeach
-        </div>
+
+        <button type="submit"
+            class="w-full bg-zinc-900 hover:bg-zinc-700 text-amber-50 font-mono text-xs tracking-widest uppercase rounded-lg py-3 transition-colors">
+            Publish Poll
+        </button>
+
     </form>
 </div>
